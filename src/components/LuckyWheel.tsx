@@ -25,6 +25,7 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({
   const [blinkPhase, setBlinkPhase] = useState(0);
   const [isSpinButtonHovered, setIsSpinButtonHovered] = useState(false);
   const [showWinWiggle, setShowWinWiggle] = useState(false);
+  const [blur, setBlur] = useState(0);
   
   const animationRef = useRef<number | null>(null);
   const currentRotationRef = useRef(0);
@@ -169,6 +170,11 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({
       
       setRotation(currentRot);
 
+      // Dynamic motion-blur setting (highest at peak acceleration/speed, fades completely as it decelerates below 25% speed)
+      const currentSpeed = 1 - progress; // desc curve from 1 to 0
+      const currentBlur = currentSpeed > 0.25 ? Math.min((currentSpeed - 0.25) * 4, 3) : 0;
+      setBlur(currentBlur);
+
       // Mechanical boundary-impact sound check
       const currentActiveIndex = getPrizeAtRotation(currentRot);
       if (currentActiveIndex !== lastActiveIndex.current) {
@@ -182,6 +188,7 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({
         // Safe final stop assignment
         setRotation(finalRotation);
         setIsSpinning(false);
+        setBlur(0);
         playWinChime(soundEnabled);
         speakPrize(winnerPrize.name, soundEnabled);
         
@@ -350,20 +357,39 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({
         </div>
 
         {/* Outer Shiny Circle Rim & Dynamic Segment Slices Wheel */}
-        <div className="relative w-full h-full rounded-full flex items-center justify-center shadow-[0_12px_36px_rgba(30,41,59,0.12)]">
+        <div className={`relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300 ${
+          isSpinning 
+            ? 'scale-[1.015] shadow-[0_20px_50px_rgba(244,63,94,0.2)]' 
+            : showWinWiggle 
+            ? 'animate-wheel-bounce shadow-[0_25px_60px_rgba(16,185,129,0.3)]' 
+            : 'animate-wheel-breath hover:scale-[1.015]'
+        }`}>
           
           <svg
             id="lucky-wheel-canvas"
             className="w-full h-full overflow-visible select-none"
             viewBox="0 0 400 400"
           >
+            {/* SVG motion blur utility definition */}
+            <defs>
+              <filter id="spin-blur" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation={blur} />
+              </filter>
+            </defs>
+
             {/* Shadows and Outer Rim Background Ring */}
             <circle cx="200" cy="200" r="195" fill="#1E293B" className="opacity-5" />
             <circle cx="200" cy="200" r="190" fill="#0F172A" /> {/* Dark core chassis */}
             <circle cx="200" cy="200" r="183" fill="#1E293B" stroke="#334155" strokeWidth="3" />
 
-            {/* Slices Rotating Element Group */}
-            <g style={{ transform: `rotate(${rotation}deg)`, transformOrigin: '200px 200px' }} className="transition-transform duration-75">
+            {/* Slices Rotating Element Group with optional hardware-accelerated motion blur filter */}
+            <g 
+              style={{ 
+                transform: `rotate(${rotation}deg)`, 
+                transformOrigin: '200px 200px',
+                filter: blur > 0.1 ? 'url(#spin-blur)' : 'none'
+              }}
+            >
               
               {/* Fallback for single prize containing entire circle */}
               {prizes.length === 1 ? (
@@ -469,6 +495,16 @@ export const LuckyWheel: React.FC<LuckyWheelProps> = ({
 
             {/* Rim Lights (LED neon dots) */}
             {rimBulbs}
+
+            {/* High-speed visual speed arcs overlaying the spinning wheel */}
+            {isSpinning && blur > 0.5 && (
+              <g className="animate-speed-lines pointer-events-none" style={{ opacity: Math.min(blur / 2.5, 0.75) }}>
+                {/* Visual speed arcs/streaks */}
+                <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="3.5" strokeDasharray="80 180" style={{ transformOrigin: '200px 200px', animation: 'spin-slow 0.4s linear infinite' }} />
+                <circle cx="200" cy="200" r="120" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="3" strokeDasharray="60 220" style={{ transformOrigin: '200px 200px', animation: 'spin-slow 0.25s linear infinite reverse' }} />
+                <circle cx="200" cy="200" r="90" fill="none" stroke="rgba(244,63,94,0.45)" strokeWidth="2.5" strokeDasharray="100 120" style={{ transformOrigin: '200px 200px', animation: 'spin-slow 0.3s linear infinite' }} />
+              </g>
+            )}
 
             {/* Elegant Chrome Center Hub Cap Base (Stationary) */}
             <circle cx="200" cy="200" r="34" fill="#0F172A" stroke="#475569" strokeWidth="2" pointerEvents="none" />

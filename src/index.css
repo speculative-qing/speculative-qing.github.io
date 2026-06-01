@@ -69,3 +69,48 @@ body {
   animation: pointer-hover-vibe 1.4s ease-in-out infinite;
 }
 
+/* Wheel bounce animation on winning stop */
+@keyframes wheel-bounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.045); }
+  45% { transform: scale(0.975); }
+  65% { transform: scale(1.015); }
+  85% { transform: scale(0.995); }
+  100% { transform: scale(1); }
+}
+
+.animate-wheel-bounce {
+  animation: wheel-bounce 0.75s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Subtle ambient breath effect for wheel */
+@keyframes wheel-breath {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 36px rgba(30,41,59,0.12); }
+  50% { transform: scale(1.008); box-shadow: 0 16px 48px rgba(30,41,59,0.18); }
+}
+
+.animate-wheel-breath {
+  animation: wheel-breath 4s ease-in-out infinite;
+}
+
+/* Active neon glow pulse while spinning */
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.4)); opacity: 0.6; }
+  50% { filter: drop-shadow(0 0 18px rgba(244, 63, 94, 0.85)); opacity: 1; }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 1.2s ease-in-out infinite;
+}
+
+/* High-speed motion lines fade-in/fade-out */
+@keyframes speed-lines-fade {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 0.75; }
+}
+
+.animate-speed-lines {
+  animation: speed-lines-fade 1.5s ease-in-out infinite;
+}
+
+
