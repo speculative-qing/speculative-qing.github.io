@@ -1,0 +1,8 @@
+{
+  "name": "Remix: 转盘抽奖工具",
+  "description": "一个美观的网页端转盘抽奖工具，支持自定义奖项名称和概率，支持平滑旋转抽奖并能导出完整的中奖纪录。",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
